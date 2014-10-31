@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>{include="includes"}
-{if="empty($GLOBALS['disablejquery'])"}<script src="inc/jquery.min.js#"></script><script src="inc/jquery-ui.min.js#"></script><script src="inc/jquery.simplyCountable.js#"></script>{/if}
+{if="empty($GLOBALS['disablejquery'])"}<script src="inc/jquery.min.js#"></script><script src="inc/jquery-ui.min.js#"></script><script src="inc/jquery.simplyCountable.js#"></script><script src="inc/md5.min.js#"></script><script src="inc/yourls.js#"></script>{/if}
 </head>
 <body
 {if condition="$link.title==''"}onload="document.linkform.lf_title.focus();"
@@ -12,7 +12,7 @@
 	<div id="editlinkform">
 	    <form method="post" name="linkform">
 	        <input type="hidden" name="lf_linkdate" value="{$link.linkdate}">
-	        <i>URL</i><br><input type="text" name="lf_url" value="{$link.url|htmlspecialchars}" style="width:100%"><br>
+            <i>URL</i><br><input type="text" id="lf_url" name="lf_url" value="{$link.url|htmlspecialchars}" style="width:80%"> <a id="short-it" href="#" target="_blank" style="display:none;float:none;">Short&nbsp;it!</a><br>
             <i>Title</i> (<span id="title-counter"></span>)<br><input type="text" id="lf_title" name="lf_title" value="{$link.title|htmlspecialchars}" style="width:100%"><br>
             <i>Description</i> (<span id="description-counter"></span>)<br><textarea id="lf_description" name="lf_description" rows="4" cols="25" style="width:100%">{$link.description|htmlspecialchars}</textarea><br>
 	        <i>Tags</i><br><input type="text" id="lf_tags" name="lf_tags" value="{$link.tags|htmlspecialchars}" style="width:100%"><br>
@@ -36,6 +36,19 @@
 <script language="JavaScript">
 $(document).ready(function()
 {
+    if (yourls) {
+        yourls.connect('http://dtnj.it/yourls-api.php', { signature: 'efe758b8d3' });
+        $('#short-it').toggle(true).click(function(e) {
+            var $shortit = $(this),
+                longUrl = "{$link.url|htmlspecialchars}",
+                shortUrlPrefix = 'postit-*';
+            yourls.shorten(longUrl, shortUrlPrefix, function(data) {
+                $('#lf_url').val(data.shorturl);
+                $shortit.unbind('click').attr('href',longUrl).text('Original');
+            });
+            e.preventDefault();
+        });
+    }
     $('#lf_tags').autocomplete({source:'{$source}?ws=tags',minLength:1});
     $('#lf_title').simplyCountable({counter: '#title-counter', countDirection: 'up'});
     $('#lf_description').simplyCountable({counter: '#description-counter', countDirection: 'up'});
